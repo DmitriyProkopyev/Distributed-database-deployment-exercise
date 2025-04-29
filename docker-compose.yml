@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:latest
+    ports:
+      - "2181:2181"
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - "9092:9092"
+    environment:
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
+    depends_on:
+      - zookeeper
+
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MONGO_URI=mongodb://mongo:27017
+    depends_on:
+      - kafka
+      - mongo
+
+  nginx:
+    image: openresty/openresty:alpine
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
+      - ./nginx/lua:/etc/nginx/lua
+    depends_on:
+      - backend
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+
+volumes:
+  mongo_data:

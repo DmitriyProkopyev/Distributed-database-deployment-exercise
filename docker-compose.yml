@@ -1,10 +1,9 @@
-version: '3.8'
-
 services:
   zookeeper:
     image: zookeeper:latest
     ports:
       - "2181:2181"
+    restart: unless-stopped
 
   kafka:
     image: bitnami/kafka:latest
@@ -16,34 +15,39 @@ services:
       - KAFKA_AUTO_CREATE_TOPICS_ENABLE=true
     depends_on:
       - zookeeper
+    restart: unless-stopped
 
-  backend:
-    build: ./backend
+  web_kafka:
+    build: .
     ports:
-      - "8000:8000"
-    environment:
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
-      - MONGO_URI=mongodb://mongo:27017
+      - "8002:8000"
     depends_on:
       - kafka
-      - mongo
+      - mongo_kafka
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
+      - MONGO_URI=mongodb://mongo_kafka:27017
+      - MONGO_DB_NAME=distributed_database_kafka
+    restart: unless-stopped
 
-  nginx:
+  mongo_kafka:
+    image: mongo:latest
+    ports:
+      - "27018:27017"
+    volumes:
+      - mongo_kafka_data:/data/db
+    restart: unless-stopped
+
+  nginx_kafka:
     image: openresty/openresty:alpine
     ports:
-      - "80:80"
+      - "8080:80"
     volumes:
       - ./nginx/nginx.conf:/usr/local/openresty/nginx/conf/nginx.conf
       - ./nginx/lua:/etc/nginx/lua
     depends_on:
-      - backend
-
-  mongo:
-    image: mongo:latest
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+      - web_kafka
+    restart: unless-stopped
 
 volumes:
-  mongo_data:
+  mongo_kafka_data:

@@ -18,7 +18,7 @@ services:
     restart: unless-stopped
 
   web_kafka:
-    build: .\backend
+    build: .backend
     ports:
       - "8002:8000"
     depends_on:

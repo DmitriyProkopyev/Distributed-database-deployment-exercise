@@ -11,8 +11,34 @@ from app.services import (
     health_check
 )
 import asyncio
+from opentelemetry import trace
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
+from opentelemetry.sdk.resources import Resource
+from opentelemetry.instrumentation.fastapi import FastAPIInstrumentor
+from app.monitoring import ReplicationMonitor
+
+# Configure OpenTelemetry
+resource = Resource(attributes={
+    "service.name": "backend",
+    "service.version": "1.0.0"
+})
+trace.set_tracer_provider(TracerProvider(resource=resource))
+jaeger_exporter = JaegerExporter(
+    agent_host_name="tracing-headless",
+    agent_port=6831,
+)
+span_processor = BatchSpanProcessor(jaeger_exporter)
+trace.get_tracer_provider().add_span_processor(span_processor)
 
 app = FastAPI(title="Distributed Database Deployment")
+
+# Instrument FastAPI
+FastAPIInstrumentor.instrument_app(app)
+
+# Initialize replication monitor
+replication_monitor = ReplicationMonitor()
 
 @app.on_event("startup")
 async def startup():

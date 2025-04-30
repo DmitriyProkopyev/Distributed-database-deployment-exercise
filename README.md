@@ -88,8 +88,24 @@ Here you can view all your Kubernetes resources, check pod logs, and monitor the
 
 ### 8. Access the application UI
 
-After deployment, the application is available at [http://localhost:3000](http://localhost:3000) (replace with your actual port if different).  
-..............ADD INFORMATION...................
+Once the backend services (e.g., MongoDB) are deployed, open your browser and navigate to `http://localhost:3000` to access the application UI.
+
+- **What you will see:**
+  - The UI displays a settings panel where you can modify your preferences.
+  - You will see fields to set:
+    - User Name
+    - Email
+    - Language
+    - Theme
+    - Email notifications
+  - There are buttons for saving changes or discarding them.
+
+- **Functionality:**
+  - **Save Button:** If you click the "Save" button, the data you entered will be stored in the distributed database. You can refresh the page to verify that your changes were successfully saved.
+  - **No Save:** If you don’t save the changes, the data won't be stored, and you won't be able to see the updated values when you navigate back.
+
+After making changes, feel free to refresh the page to check the status of your saved data.
+
 
 ---
 

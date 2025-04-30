@@ -1,20 +1,25 @@
 # Distributed-database-deployment-exercise
-Implemented group exercise on deploying a reliable distributed database system
 
+This repository contains a group exercise on deploying a reliable distributed database system using Kubernetes.
 
 ---
 
-## 1. Подключение к серверу по SSH
+## Getting Started
+
+### 1. Clone the repository
 
 ```sh
-ssh -i <path_to_your_private_ssh> -p 6002 developer@10.100.30.239
+git clone https://github.com/<your-org>/Distributed-database-deployment-exercise.git
+cd Distributed-database-deployment-exercise
 ```
 
 ---
 
-## 2. Установка Minikube и kubectl (установлены)
+## Installation
 
-### Установка kubectl
+### 2. Install Minikube and kubectl
+
+#### Install kubectl
 
 ```sh
 curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -23,7 +28,7 @@ sudo mv kubectl /usr/local/bin/
 kubectl version --client
 ```
 
-### Установка Minikube
+#### Install Minikube
 
 ```sh
 curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
@@ -33,16 +38,9 @@ minikube version
 
 ---
 
-## 3. Перенос конфига на сервер (перенесено)
+## Usage
 
-```sh
-scp -i <path_to_your_private_ssh> -P 6002 -r /path/to/your/yaml/folder developer@10.100.30.239:~/config
-```
-- `/path/to/your/yaml/folder` — путь к папке с yaml-файлами.
-
----
-
-## 4. Запуск Minikube на сервере
+### 3. Start Minikube
 
 ```sh
 minikube start --driver=docker --memory=4096 --cpus=2
@@ -50,29 +48,40 @@ minikube start --driver=docker --memory=4096 --cpus=2
 
 ---
 
-## 5. Применение конфига
+### 4. Deploy the configuration
 
 ```sh
-kubectl apply -f ~/config/mongodb
+kubectl apply -f ./config/mongodb
 ```
 
 ---
 
-## 6. Проверка 
+### 5. Check deployment status
 
 ```sh
 kubectl get pods
 kubectl get svc
 ```
 
+---
 
-## 7. Проверка статуса minikube
+### 6. Check Minikube status
+
 ```sh
 minikube status
 ```
 
-## 8. Запуск дэшборда 
+---
+
+### 7. Launch the Kubernetes dashboard
+
 ```sh
 minikube dashboard
 ```
-Откроется вкладка в браузере с дэшбордом
+A browser tab with the dashboard will open.
+
+---
+
+## Project Structure
+
+- `config/` — Kubernetes manifests for deploying the distributed database and related services.

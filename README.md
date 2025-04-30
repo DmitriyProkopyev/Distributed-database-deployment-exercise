@@ -89,10 +89,7 @@ Here you can view all your Kubernetes resources, check pod logs, and monitor the
 ### 8. Access the application UI
 
 After deployment, the application is available at [http://localhost:3000](http://localhost:3000) (replace with your actual port if different).  
-- You will see the main interface with a form to enter and save data.
-- **"Save" button:** saves the entered data to the database. After saving, you can refresh the page and the data will persist.
-- **If you do not save the data:** the data will not be available after refreshing the page.
-- You can test the application's reliability by saving data, refreshing, and confirming it is still there.
+..............ADD INFORMATION...................
 
 ---
 

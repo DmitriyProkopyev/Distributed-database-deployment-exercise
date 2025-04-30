@@ -17,32 +17,26 @@ async def shutdown():
     await mongodb.close()
     await kafka_client.close()
 
-@app.post("/create_document/")
+@app.post("/documents/")
 async def create_document(data: dict):
-    from app.services import create_doc
     return await create_doc(data)
 
-@app.get("/read_documents/")
+@app.get("/documents/")
 async def read_documents(skip: int = 0, limit: int = 100):
-    from app.services import get_docs
     return await get_docs(skip=skip, limit=limit)
 
-@app.get("/read_document/{doc_id}")
+@app.get("/documents/{doc_id}")
 async def read_document(doc_id: str):
-    from app.services import get_doc
     return await get_doc(doc_id)
 
-@app.put("/update_document/{doc_id}")
+@app.put("/documents/{doc_id}")
 async def update_document(doc_id: str, data: dict):
-    from app.services import update_doc
     return await update_doc(doc_id, data)
 
-@app.delete("/delete_document/{doc_id}")
+@app.delete("/documents/{doc_id}")
 async def delete_document(doc_id: str):
-    from app.services import delete_doc
     return await delete_doc(doc_id)
 
-@app.get("/check_health")
+@app.get("/health")
 async def check_health():
-    from app.services import health_check
     return await health_check()

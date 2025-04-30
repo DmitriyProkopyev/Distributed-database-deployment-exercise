@@ -10,8 +10,7 @@ class KafkaClient:
     async def connect(self):
         self.producer = AIOKafkaProducer(
             bootstrap_servers=settings.KAFKA_BOOTSTRAP_SERVERS,
-            value_serializer=lambda v: json.dumps(v).encode('utf-8')
-        )
+            value_serializer=lambda v: json.dumps(v).encode('utf-8'))
         await self.producer.start()
         
     async def close(self):

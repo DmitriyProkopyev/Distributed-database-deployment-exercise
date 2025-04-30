@@ -17,7 +17,7 @@ class MongoDB:
             self.client.close()
             print("MongoDB connection closed")
 
-    def get_collection(self, name="documents"):
+    def get_collection(self, name="sample"):
         return self.db[name]
 
 mongodb = MongoDB()

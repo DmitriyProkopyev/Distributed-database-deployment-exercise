@@ -78,7 +78,29 @@ minikube status
 ```sh
 minikube dashboard
 ```
-A browser tab with the dashboard will open.
+A browser tab will open at [http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/).  
+Here you can view all your Kubernetes resources, check pod logs, and monitor the cluster status.  
+- The **"Workloads"** tab shows all running pods and deployments.
+- The **"Services"** tab lists all exposed services and their cluster IPs.
+- You can use the **"Logs"** button next to any pod to view its logs.
+
+---
+
+### 8. Access the application UI
+
+After deployment, the application is available at [http://localhost:3000](http://localhost:3000) (replace with your actual port if different).  
+- You will see the main interface with a form to enter and save data.
+- **"Save" button:** saves the entered data to the database. After saving, you can refresh the page and the data will persist.
+- **If you do not save the data:** the data will not be available after refreshing the page.
+- You can test the application's reliability by saving data, refreshing, and confirming it is still there.
+
+---
+
+### 9. Access Jaeger dashboard
+
+If Jaeger is deployed, you can access the tracing dashboard at [http://localhost:16686](http://localhost:16686).  
+- Here you can view traces of requests passing through your distributed system.
+- Use the search panel to select a service and see detailed traces.
 
 ---
 

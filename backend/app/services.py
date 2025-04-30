@@ -5,6 +5,7 @@ from app.config import settings
 from app.utils import to_json, validate_id
 import uuid
 import json
+import asyncio
 from aiokafka import AIOKafkaConsumer
 
 async def wait_for_kafka_response(request_id: str, timeout: float = 5.0):
@@ -19,10 +20,14 @@ async def wait_for_kafka_response(request_id: str, timeout: float = 5.0):
     
     try:
         await consumer.start()
+        start_time = asyncio.get_event_loop().time()
+        
         while True:
-            msg = await consumer.getone(timeout_ms=int(timeout*1000))
+            msg = await asyncio.wait_for(consumer.getone(), timeout=timeout)
             if msg.value.get("request_id") == request_id:
                 return msg.value
+            if asyncio.get_event_loop().time() - start_time > timeout:
+                raise asyncio.TimeoutError()
     except Exception as e:
         raise HTTPException(504, f"Timeout waiting for response: {str(e)}")
     finally:
@@ -87,12 +92,19 @@ async def delete_doc(doc_id: str) -> dict:
 
 async def health_check() -> dict:
     try:
+        await mongodb.db.command('ping')
         request_id = str(uuid.uuid4())
         await kafka_client.send_message(
             settings.KAFKA_TOPIC_BACKEND_TO_DB,
             {"action": "health_check", "request_id": request_id}
         )
-        response = await wait_for_kafka_response(request_id, timeout=2.0)
-        return {"status": "healthy", "kafka": "ok", "mongo": "ok"}
+        return {
+            "status": "healthy",
+            "mongo": "ok",
+            "kafka": "ok"
+        }
     except Exception as e:
-        return {"status": "unhealthy", "error": str(e)}
+        return {
+            "status": "unhealthy",
+            "error": str(e)
+        }

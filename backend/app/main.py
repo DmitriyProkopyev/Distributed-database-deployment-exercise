@@ -1,0 +1,71 @@
+from fastapi import FastAPI
+from app.database import mongodb
+from app.kafka_client import kafka_client
+from app.db_consumer import start_db_consumer
+from app.services import (
+    create_doc,
+    get_doc,
+    get_docs,
+    update_doc,
+    delete_doc,
+    health_check
+)
+import asyncio
+
+app = FastAPI(title="Distributed Database Deployment")
+
+@app.on_event("startup")
+async def startup():
+    await mongodb.connect()
+    await kafka_client.connect()
+    asyncio.create_task(start_db_consumer())
+
+@app.on_event("shutdown")
+async def shutdown():
+    await mongodb.close()
+    await kafka_client.close()
+
+@app.post(
+    "/create_document/",
+    response_model=dict,
+    summary="Create a new document",
+    description="Creates a new document in the database with the provided data in json format.",
+    response_description="Created document data with assigned id."
+)
+async def create_document(data: dict):
+    return await create_doc(data)
+
+@app.get(
+    "/read_documents/",
+    response_model=list[dict],
+    summary="Get a list of documents",
+    description="Retrieves multiple documents from the database. Accepts parameters int skip and limit.",
+    response_description="List of documents."
+)
+
+async def read_documents(skip: int = 0, limit: int = 100):
+    return await get_docs(skip=skip, limit=limit)
+
+@app.get(
+    "/read_document/{doc_id}",
+    response_model=dict,
+    summary="Get a document by ID",
+    description="Retrieves a single document by its ID from the database.",
+    response_description="Requested document data."
+)
+async def read_document(doc_id: str):
+    return await get_doc(doc_id)
+
+@app.put(
+    "/update_document/{doc_id}",
+    response_model=dict,
+    summary="Update a document by ID",
+    description="Updates an existing document with the provided data by its ID.",
+    response_description="Updated document data."
+)
+async def update_document(doc_id: str, data: dict):
+    return await update_doc(doc_id, data)
+
+@app.get("/health")
+async def check_health():
+    return await health_check()

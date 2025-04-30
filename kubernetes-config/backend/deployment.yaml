@@ -15,5 +15,6 @@ spec:
       containers:
         - name: backend
           image: backend-image:latest
+          imagePullPolicy: Never
           ports:
             - containerPort: 80

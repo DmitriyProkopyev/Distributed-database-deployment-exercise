@@ -9,7 +9,7 @@ This repository contains a group exercise on deploying a reliable distributed da
 ### 1. Clone the repository
 
 ```sh
-git clone https://github.com/<your-org>/Distributed-database-deployment-exercise.git
+git clone https://github.com/DmitriyProkopyev/Distributed-database-deployment-exercise.git
 cd Distributed-database-deployment-exercise
 ```
 

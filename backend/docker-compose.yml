@@ -4,6 +4,8 @@ services:
     ports:
       - "2181:2181"
     restart: unless-stopped
+    networks:
+      - app-network
 
   kafka:
     image: bitnami/kafka:latest
@@ -26,6 +28,8 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+    networks:
+      - app-network
     
   mongo:
     image: mongo:latest
@@ -34,6 +38,20 @@ services:
     volumes:
       - mongo_data:/data/db
     restart: unless-stopped
+    networks:
+      - app-network
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.52
+    ports:
+      - "16686:16686"  # UI
+      - "14268:14268"  # HTTP collector
+      - "6831:6831"    # UDP agent
+    environment:
+      - COLLECTOR_ZIPKIN_HOST_PORT=:9411
+    restart: unless-stopped
+    networks:
+      - app-network
 
   frontend:
     build:
@@ -42,6 +60,8 @@ services:
     volumes:
       - ../frontend/build:/usr/share/nginx/html
     restart: unless-stopped
+    networks:
+      - app-network
 
   backend:
     build: .
@@ -51,12 +71,18 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:9092
       - MONGO_URI=mongodb://mongo:27017
       - MONGO_DB_NAME=testdb
+      - OTEL_SERVICE_NAME=backend
+      - OTEL_EXPORTER_JAEGER_ENDPOINT=http://jaeger:14268/api/traces
     depends_on:
       kafka:
         condition: service_healthy
       mongo:
         condition: service_started
+      jaeger:
+        condition: service_started
     restart: unless-stopped
+    networks:
+      - app-network
 
   nginx:
     image: nginx:latest
@@ -69,7 +95,13 @@ services:
       - backend
       - frontend
     restart: unless-stopped
+    networks:
+      - app-network
 
 volumes:
   mongo_data:
   kafka_data:
+
+networks:
+  app-network:
+    driver: bridge

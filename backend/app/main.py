@@ -7,7 +7,6 @@ from app.services import (
     get_doc,
     get_docs,
     update_doc,
-    delete_doc,
     health_check
 )
 import asyncio

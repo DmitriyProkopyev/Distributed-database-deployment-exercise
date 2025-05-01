@@ -3,23 +3,26 @@ from app.kafka_client import kafka_client
 from app.config import settings
 from app.utils import to_json, validate_id
 from aiokafka import AIOKafkaConsumer
+import datetime
 import json
 import asyncio
 
 async def handle_db_command(message: dict):
+    processed_col = mongodb.get_processed_requests_collection()
+    request_id = message.get("request_id")
+    existing = await processed_col.find_one({"_id": request_id})
+    if existing:
+        return existing["response"]
+
     col = mongodb.get_collection()
+    response = None
     try:
         action = message.get("action")
-        request_id = message.get("request_id")
         
         if action == "create":
             data = message["data"]
-            if "_id" in data:
-                await col.replace_one({"_id": validate_id(data["_id"])}, data, upsert=True)
-                response = {"id": str(data["_id"]), "request_id": request_id}
-            else:
-                result = await col.insert_one(data)
-                response = {"id": str(result.inserted_id), "request_id": request_id}
+            result = await col.insert_one(data)
+            response = {"id": str(result.inserted_id), "request_id": request_id}
                 
         elif action == "read":
             if "doc_id" in message:
@@ -40,11 +43,26 @@ async def handle_db_command(message: dict):
             
         else:
             response = {"error": "unknown action", "request_id": request_id}
+
+        if response:
+            await processed_col.insert_one({
+                "_id": request_id,
+                "response": response,
+                "action": action,
+                "timestamp": datetime.datetime.utcnow()
+            })
             
         return response
         
     except Exception as e:
-        return {"error": str(e), "request_id": request_id}
+        error_response = {"error": str(e), "request_id": request_id}
+        await processed_col.insert_one({
+            "_id": request_id,
+            "response": error_response,
+            "action": action,
+            "timestamp": datetime.datetime.utcnow()
+        })
+        return error_response
 
 async def start_db_consumer():
     consumer = AIOKafkaConsumer(

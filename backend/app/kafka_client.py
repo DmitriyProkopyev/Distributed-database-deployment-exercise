@@ -10,6 +10,7 @@ class KafkaClient:
     def __init__(self):
         self.producer = None
         self.consumer = None
+        self.response_futures = {}
 
     async def connect(self, max_retries=5, retry_delay=5):
         for attempt in range(max_retries):
@@ -19,6 +20,7 @@ class KafkaClient:
                     value_serializer=lambda v: json.dumps(v).encode('utf-8'))
                 await self.producer.start()
                 logger.info("Successfully connected to Kafka")
+                asyncio.create_task(self._consume_responses())
                 return
             except Exception as e:
                 if attempt == max_retries - 1:
@@ -57,7 +59,7 @@ class KafkaClient:
         finally:
             await self.consumer.stop()
 
-    async def wait_for_response(self, request_id: str, timeout: float = 15.0):
+    async def wait_for_response(self, request_id: str, timeout: float = 35.0):
         future = asyncio.get_event_loop().create_future()
         self.response_futures[request_id] = future
         try:
